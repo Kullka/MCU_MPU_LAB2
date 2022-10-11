@@ -378,7 +378,7 @@ void update7SEG(int index){
 
 int counter = 25;
 int indexLed = 0;
-int counterDot = 2;
+int counterDot = 4;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	counter--;
 	if (counter<=0) {
@@ -405,7 +405,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		if (counterDot>0) {
 			counterDot--;
 			if (counterDot==0) {
-				counterDot = 2;
+				counterDot = 4;
 				HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
 			}
 		}

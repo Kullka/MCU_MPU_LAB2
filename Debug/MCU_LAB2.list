@@ -1057,7 +1057,7 @@ void update7SEG(int index){
 
 int counter = 25;
 int indexLed = 0;
-int counterDot = 2;
+int counterDot = 4;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  80007cc:	b580      	push	{r7, lr}
  80007ce:	b082      	sub	sp, #8
@@ -1163,9 +1163,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  800086e:	681b      	ldr	r3, [r3, #0]
  8000870:	2b00      	cmp	r3, #0
  8000872:	d106      	bne.n	8000882 <HAL_TIM_PeriodElapsedCallback+0xb6>
-				counterDot = 2;
+				counterDot = 4;
  8000874:	4b07      	ldr	r3, [pc, #28]	; (8000894 <HAL_TIM_PeriodElapsedCallback+0xc8>)
- 8000876:	2202      	movs	r2, #2
+ 8000876:	2204      	movs	r2, #4
  8000878:	601a      	str	r2, [r3, #0]
 				HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
  800087a:	2110      	movs	r1, #16
