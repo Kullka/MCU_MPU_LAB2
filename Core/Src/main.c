@@ -356,43 +356,44 @@ void update7SEG(int index){
     }
 }
 
-int counter = 100;
-int index_led = 0;
+int counter = 50;
+int indexLed = 0;
+int counterDot = 2;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	counter--;
 	if (counter<=0) {
-		counter = 100;
-		if (index_led==0) {
+		counter = 50;
+		if (indexLed==0) {
 			HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, RESET);
 			HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, SET);
 			HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, SET);
 			HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, SET);
-			update7SEG(index_led);
-			index_led = 1;
+			update7SEG(indexLed);
+			indexLed = 1;
 		}
-		else if (index_led==1) {
+		else if (indexLed==1) {
 			HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, SET);
 			HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, RESET);
 			HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, SET);
 			HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, SET);
-			update7SEG(index_led);
-			index_led = 2;
+			update7SEG(indexLed);
+			indexLed = 2;
 		}
-		else if (index_led==2) {
+		else if (indexLed==2) {
 			HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, SET);
 			HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, SET);
 			HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, RESET);
 			HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, SET);
-			update7SEG(index_led);
-			index_led = 3;
+			update7SEG(indexLed);
+			indexLed = 3;
 		}
-		else if (index_led==3) {
+		else if (indexLed==3) {
 			HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, SET);
 			HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, SET);
 			HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, SET);
 			HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, RESET);
-			update7SEG(index_led);
-			index_led = 0;
+			update7SEG(indexLed);
+			indexLed = 0;
 		}
 		else {
 			HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, RESET);
@@ -401,7 +402,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, RESET);
 			display7SEG(9);
 		}
-		HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
+		if (counterDot>0) {
+			counterDot--;
+			if (counterDot==0) {
+				counterDot = 2;
+				HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
+			}
+		}
 	}
 }
 /* USER CODE END 4 */
