@@ -246,9 +246,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   int indexLed = 0;
   set_timer0(250);
+  int counterDot = 2;
   while (1)
   {
 	  if (timer0Flag==1) {
+		  set_timer0(250);
 		  second++;
 		  if (second >= 60){
 			  second = 0;
@@ -265,7 +267,11 @@ int main(void)
 		  update7SEG(indexLed);
 		  indexLed++;
 		  indexLed = indexLed%4;
-		  set_timer0(250);
+		  counterDot--;
+		  if (counterDot<=0) {
+			  counterDot = 2;
+			  HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
+		  }
 	  }
     /* USER CODE END WHILE */
 
