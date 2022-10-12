@@ -59,37 +59,37 @@ static void MX_TIM2_Init(void);
 void display7SEG(int number) {
 	switch(number) {
 		case 0:
-			GPIOB->ODR = 0x3F;
+			GPIOB->ODR = 0x40;
 			break ;
 		case 1:
-			GPIOB->ODR = 0x06;
+			GPIOB->ODR = 0x79;
 			break ;
 		case 2:
-			GPIOB->ODR = 0x5B;
+			GPIOB->ODR = 0x24;
 			break ;
 		case 3:
-			GPIOB->ODR = 0x4F;
+			GPIOB->ODR = 0x30;
 			break ;
 		case 4:
-			GPIOB->ODR = 0x66;
+			GPIOB->ODR = 0x19;
 			break ;
 		case 5:
-			GPIOB->ODR = 0x6D;
+			GPIOB->ODR = 0x12;
 			break ;
 		case 6:
-			GPIOB->ODR = 0x7D;
+			GPIOB->ODR = 0x2;
 			break ;
 		case 7:
-			GPIOB->ODR = 0x07;
+			GPIOB->ODR = 0x78;
 			break ;
 		case 8:
-			GPIOB->ODR = 0x7F;
+			GPIOB->ODR = 0x0;
 			break ;
 		case 9:
-			GPIOB->ODR = 0x67;
+			GPIOB->ODR = 0x10;
 			break ;
 		default:
-			GPIOB->ODR = 0x77;
+			GPIOB->ODR = 0x10;
 			break ;
 	}
 }
@@ -108,36 +108,36 @@ void update7SEG(int index){
     switch (index){
         case 0:
             //Display the first 7SEG with led_buffer[0]
-			GPIOA->ODR |= 0x4;
+			GPIOA->ODR &= ~(0x1<<2);
         	display7SEG(led_buffer[0]);
             break;
         case 1:
             //Display the second 7SEG with led_buffer[1]
-			GPIOA->ODR |= 0x8;
+			GPIOA->ODR &= ~(0x1<<3);
         	display7SEG(led_buffer[1]);
             break;
         case 2:
             //Display the third 7SEG with led_buffer[2]
-        	GPIOA->ODR |= 0x10;
+        	GPIOA->ODR &= ~(0x1<<4);
         	display7SEG(led_buffer[2]);
             break;
         case 3:
             //Display the forth 7SEG with led_buffer[3]
-        	GPIOA->ODR |= 0x20;
+        	GPIOA->ODR &= ~(0x1<<5);
         	display7SEG(led_buffer[3]);
             break;
         default:
-        	GPIOA->ODR |= 0x20;
+        	GPIOA->ODR &= ~(0x1<<5);
             break;
     }
 }
 
 void clearAllColumn() {
-	GPIOB->ODR |= 0x0;
+	GPIOB->ODR |= 0xFF00;
 }
 
 void clearAllRow() {
-	GPIOA->ODR |= 0x0;
+	GPIOA->ODR |= 0xFF00;
 }
 
 const int MAX_LED_MATRIX = 8;
@@ -147,8 +147,10 @@ void updateLEDMatrix(int index){
 	clearAllRow();
 	clearAllColumn();
     int shift = index + 8;
-    GPIOA->ODR = GPIOA->ODR | (1<<shift);
-    GPIOB->ODR = GPIOB->ODR | (matrix_buffer[index]<<8);
+    uint8_t colChange = ~(matrix_buffer[index]<<8);
+    uint8_t rowChange = ~(1<<shift);
+    GPIOA->ODR &= rowChange;
+    GPIOB->ODR &= colChange;
 }
 
 /* USER CODE END 0 */
@@ -188,35 +190,24 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int indexLed = 0;
-    set_timer0(250);
-    int counterDot = 2;
+//  	int indexLed = 0;
+//    set_timer0(250);
+//    int counterDot = 2;
+//    int indexLedMatrix = 0;
+  	  HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, 0);
     while (1)
     {
-  	  if (timer0Flag==1) {
-  		  set_timer0(250);
-  		  second++;
-  		  if (second >= 60){
-  			  second = 0;
-  			  minute++;
-  		  }
-  		  if(minute >= 60){
-  			  minute = 0;
-  			  hour++;
-  		  }
-  		  if(hour >=24){
-  			  hour = 0;
-  		  }
-  		  updateClockBuffer(hour, minute);
-  		  update7SEG(indexLed);
-  		  indexLed++;
-  		  indexLed = indexLed%4;
-  		  counterDot--;
-  		  if (counterDot<=0) {
-  			  counterDot = 2;
-  			  HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
-  		  }
-  	  }
+//  	  if (timer0Flag==1) {
+//  		 set_timer0(250);
+//  		 updateLEDMatrix(indexLedMatrix);
+//  		 indexLedMatrix++;
+//  		 indexLedMatrix %= 8;
+//  	  }
+
+    	display7SEG(0);
+    	HAL_Delay(1000);
+    	display7SEG(5);
+    	HAL_Delay(1000);
       /* USER CODE END WHILE */
 
       /* USER CODE BEGIN 3 */
@@ -322,13 +313,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin
                           |LED_RED_Pin|DOT_Pin|ENM0_Pin|ENM1_Pin
                           |ENM2_Pin|ENM3_Pin|ENM4_Pin|ENM5_Pin
-                          |ENM6_Pin|ENM7_Pin, GPIO_PIN_RESET);
+                          |ENM6_Pin|ENM7_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, a_Pin|b_Pin|c_Pin|ROW2_Pin
                           |ROW3_Pin|ROW4_Pin|ROW5_Pin|ROW6_Pin
                           |ROW7_Pin|d_Pin|e_Pin|f_Pin
-                          |g_Pin|ROW0_Pin|ROW1_Pin, GPIO_PIN_RESET);
+                          |g_Pin|ROW0_Pin|ROW1_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : EN0_Pin EN1_Pin EN2_Pin EN3_Pin
                            LED_RED_Pin DOT_Pin ENM0_Pin ENM1_Pin
