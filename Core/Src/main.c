@@ -108,40 +108,41 @@ void update7SEG(int index){
     switch (index){
         case 0:
             //Display the first 7SEG with led_buffer[0]
-			GPIOA->ODR = 0x4;
+			GPIOA->ODR |= 0x4;
         	display7SEG(led_buffer[0]);
             break;
         case 1:
             //Display the second 7SEG with led_buffer[1]
-			GPIOA->ODR = 0x8;
+			GPIOA->ODR |= 0x8;
         	display7SEG(led_buffer[1]);
             break;
         case 2:
             //Display the third 7SEG with led_buffer[2]
-        	GPIOA->ODR = 0X10;
+        	GPIOA->ODR |= 0x10;
         	display7SEG(led_buffer[2]);
             break;
         case 3:
             //Display the forth 7SEG with led_buffer[3]
-        	GPIOA->ODR = 0x20;
+        	GPIOA->ODR |= 0x20;
         	display7SEG(led_buffer[3]);
             break;
         default:
-        	GPIOA->ODR = 0x20;
+        	GPIOA->ODR |= 0x20;
             break;
     }
 }
 
 void clearAllColumn() {
-	GPIOB->ODR = 0 | (GPIOB->ODR);
+	GPIOB->ODR |= 0x0;
 }
 
 void clearAllRow() {
-	GPIOA->ODR = 0 | (GPIOA->ODR);
+	GPIOA->ODR |= 0x0;
 }
 
 const int MAX_LED_MATRIX = 8;
 uint8_t matrix_buffer[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
 void updateLEDMatrix(int index){
 	clearAllRow();
 	clearAllColumn();
