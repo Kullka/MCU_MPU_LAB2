@@ -382,7 +382,7 @@ int counterDot = 4;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	counter--;
 	if (counter<=0) {
-		counter = 50;
+		counter = 25;
 		if (indexLed==0) {
 			update7SEG(indexLed);
 			indexLed = 1;
