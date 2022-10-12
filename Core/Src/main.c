@@ -57,76 +57,76 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void reset7SEG() {
-	GPIOB->ODR |= 0x7F;
+void reset7SEG() {				// Turn off LED 7-SEGMENT
+	GPIOB->ODR |= 0x7F;			// 0x7F = 0b1111111
 }
 
-void display7SEG(int number) {
+void display7SEG(int number) {	// Turn on LED 7-SEGMENT corresponding to parameter
 	reset7SEG();
 	switch(number) {
 		case 0:
-			GPIOB->ODR &= ~0x3F;
+			GPIOB->ODR &= ~0x3F; // 0 = 0b1111110, but in order to turn on we need to get inverse this binary number
 			break ;
 		case 1:
-			GPIOB->ODR &= ~0x06;
+			GPIOB->ODR &= ~0x06; // similarly
 			break ;
 		case 2:
-			GPIOB->ODR &= ~0x5B;
+			GPIOB->ODR &= ~0x5B; // similarly
 			break ;
 		case 3:
-			GPIOB->ODR &= ~0x4F;
+			GPIOB->ODR &= ~0x4F; // similarly
 			break ;
 		case 4:
-			GPIOB->ODR &= ~0x66;
+			GPIOB->ODR &= ~0x66; // similarly
 			break ;
 		case 5:
-			GPIOB->ODR &= ~0x6D;
+			GPIOB->ODR &= ~0x6D; // similarly
 			break ;
 		case 6:
-			GPIOB->ODR &= ~0x7D;
+			GPIOB->ODR &= ~0x7D; // similarly
 			break ;
 		case 7:
-			GPIOB->ODR &= ~0x07;
+			GPIOB->ODR &= ~0x07; // similarly
 			break ;
 		case 8:
-			GPIOB->ODR &= ~0x7F;
+			GPIOB->ODR &= ~0x7F; // similarly
 			break ;
 		case 9:
-			GPIOB->ODR &= ~0x67;
+			GPIOB->ODR &= ~0x67; // similarly
 			break ;
 		default:
-			GPIOB->ODR &= ~0x77;
+			GPIOB->ODR &= ~0x77; // similarly
 			break ;
 	}
 }
 
-void turn_off_all_7seg() {
-	GPIOA->ODR |= 0x3C;
+void turn_off_all_7seg() {				// disable all LED 7-SEGMENT
+	GPIOA->ODR |= 0x3C;					// 0x3C = 0b111100
 }
 
-void turn_on_7seg(int index) {
-	turn_off_all_7seg();
-	int shift = 2 + index;
-	GPIOA->ODR &= ~(1<<shift);
+void turn_on_7seg(int index) {			// enable LED 7-SEGMENT at index
+	turn_off_all_7seg();				// before turn on LED, i turn off all LED have turned on
+	int shift = 2 + index;				// EN0, EN1, EN2, EN3 at PA2, PA3, PA4, PA5
+	GPIOA->ODR &= ~(1<<shift);			// this only write at bit we need and not affect any bit else
 }
 
-void clear_matrix() {
-	GPIOA->ODR |= 0xFF00;
-	GPIOB->ODR |= 0xFF00;
+void clear_matrix() {					// disable led matrix
+	GPIOA->ODR |= 0xFF00;				// turn off matrix's column
+	GPIOB->ODR |= 0xFF00;				// turn off matrix's row
 }
 
 const int MAX_LED_MATRIX = 8;
 uint8_t matrix_buffer[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 uint8_t matrixA[8] = {0x18, 0x3c, 0x66, 0xc3, 0xff, 0xff, 0xc3, 0xc3};
 
-void updateLEDMatrix(int index){
-	clear_matrix();
+void updateLEDMatrix(int index){					// turn on led matrix
+	clear_matrix();									// turn off all rows and columns before turn on one of it
 	int shift = (index<8) ? (index+8) : index;
-	GPIOB->ODR &= ~(1<<shift);
+	GPIOB->ODR &= ~(1<<shift);						// turn on row corresponding to index
 	if (index<8)
-		GPIOA->ODR &= ~(matrix_buffer[index]<<8);
+		GPIOA->ODR &= ~(matrix_buffer[index]<<8);	// display matrix_buffer if 0 <= index < 8 (1->8 in binary)
 	else
-		GPIOA->ODR &= ~(matrixA[index-8]<<8);
+		GPIOA->ODR &= ~(matrixA[index-8]<<8);		// display matrixA if 15>= index > 8
 }
 
 /* USER CODE END 0 */
@@ -174,21 +174,23 @@ int main(void)
     while (1)
     {
   	  if (timer0Flag==1) {
-			set_timer0(10);
+			set_timer0(10);								// update matrix led every 10ms
 
-			updateLEDMatrix(indexLedMatrix);
+			updateLEDMatrix(indexLedMatrix);			// display 1->8 in binary and then the letter 'A'
   		  	indexLedMatrix++;
   		 	indexLedMatrix %= 16;
 
-  		  	if (counterLed>0) {
+  		  	if (counterLed>0) {							// change led 7-segment after 250ms
   		  		counterLed--;
   		  		if (counterLed==0) {
   		  			counterLed = 25;
 					HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
   		  			HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
+
 					turn_on_7seg(indexLed);
 					indexLed++;
 					indexLed %= 4;
+
 					display7SEG(value);
 					value++;
 					value %= 10;
