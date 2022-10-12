@@ -56,101 +56,77 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void reset7SEG() {
+	GPIOB->ODR |= 0x7F;
+}
+
 void display7SEG(int number) {
+	reset7SEG();
 	switch(number) {
 		case 0:
-			GPIOB->ODR = 0x40;
+			GPIOB->ODR &= ~0x3F;
 			break ;
 		case 1:
-			GPIOB->ODR = 0x79;
+			GPIOB->ODR &= ~0x06;
 			break ;
 		case 2:
-			GPIOB->ODR = 0x24;
+			GPIOB->ODR &= ~0x5B;
 			break ;
 		case 3:
-			GPIOB->ODR = 0x30;
+			GPIOB->ODR &= ~0x4F;
 			break ;
 		case 4:
-			GPIOB->ODR = 0x19;
+			GPIOB->ODR &= ~0x66;
 			break ;
 		case 5:
-			GPIOB->ODR = 0x12;
+			GPIOB->ODR &= ~0x6D;
 			break ;
 		case 6:
-			GPIOB->ODR = 0x2;
+			GPIOB->ODR &= ~0x7D;
 			break ;
 		case 7:
-			GPIOB->ODR = 0x78;
+			GPIOB->ODR &= ~0x07;
 			break ;
 		case 8:
-			GPIOB->ODR = 0x0;
+			GPIOB->ODR &= ~0x7F;
 			break ;
 		case 9:
-			GPIOB->ODR = 0x10;
+			GPIOB->ODR &= ~0x67;
 			break ;
 		default:
-			GPIOB->ODR = 0x10;
+			GPIOB->ODR &= ~0x77;
 			break ;
 	}
 }
 
-int hour = 15, minute = 8, second = 50;
-int led_buffer[4] = {1, 5, 0, 8};
-
-void updateClockBuffer() {
-	led_buffer[0] = hour/10;
-	led_buffer[1] = hour%10;
-	led_buffer[2] = minute/10;
-	led_buffer[3] = minute%10;
+void turn_off_all_7seg() {
+	GPIOA->ODR |= 0x3C;
 }
 
-void update7SEG(int index){
-    switch (index){
-        case 0:
-            //Display the first 7SEG with led_buffer[0]
-			GPIOA->ODR &= ~(0x1<<2);
-        	display7SEG(led_buffer[0]);
-            break;
-        case 1:
-            //Display the second 7SEG with led_buffer[1]
-			GPIOA->ODR &= ~(0x1<<3);
-        	display7SEG(led_buffer[1]);
-            break;
-        case 2:
-            //Display the third 7SEG with led_buffer[2]
-        	GPIOA->ODR &= ~(0x1<<4);
-        	display7SEG(led_buffer[2]);
-            break;
-        case 3:
-            //Display the forth 7SEG with led_buffer[3]
-        	GPIOA->ODR &= ~(0x1<<5);
-        	display7SEG(led_buffer[3]);
-            break;
-        default:
-        	GPIOA->ODR &= ~(0x1<<5);
-            break;
-    }
+void turn_on_7seg(int index) {
+	turn_off_all_7seg();
+	int shift = 2 + index;
+	GPIOA->ODR &= ~(1<<shift);
 }
 
-void clearAllColumn() {
-	GPIOB->ODR |= 0xFF00;
-}
-
-void clearAllRow() {
+void clear_matrix() {
 	GPIOA->ODR |= 0xFF00;
+	GPIOB->ODR |= 0xFF00;
 }
 
 const int MAX_LED_MATRIX = 8;
 uint8_t matrix_buffer[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+uint8_t matrixA[8] = {0x18, 0x3c, 0x66, 0xc3, 0xff, 0xff, 0xc3, 0xc3};
 
 void updateLEDMatrix(int index){
-	clearAllRow();
-	clearAllColumn();
-    int shift = index + 8;
-    uint8_t colChange = ~(matrix_buffer[index]<<8);
-    uint8_t rowChange = ~(1<<shift);
-    GPIOA->ODR &= rowChange;
-    GPIOB->ODR &= colChange;
+	clear_matrix();
+	int shift = (index<8) ? (index+8) : index;
+	GPIOB->ODR &= ~(1<<shift);
+	if (index<8)
+		GPIOA->ODR &= ~(matrix_buffer[index]<<8);
+	else
+		GPIOA->ODR &= ~(matrixA[index-8]<<8);
 }
 
 /* USER CODE END 0 */
@@ -190,24 +166,36 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//  	int indexLed = 0;
-//    set_timer0(250);
-//    int counterDot = 2;
-//    int indexLedMatrix = 0;
-  	  HAL_GPIO_WritePin(EN0_GPIO_Port, EN0_Pin, 0);
+  	int indexLed = 0;
+  	int value = 0;
+  	int indexLedMatrix = 0;
+    set_timer0(500);
+    int counterLed = 50;
     while (1)
     {
-//  	  if (timer0Flag==1) {
-//  		 set_timer0(250);
-//  		 updateLEDMatrix(indexLedMatrix);
-//  		 indexLedMatrix++;
-//  		 indexLedMatrix %= 8;
-//  	  }
+  	  if (timer0Flag==1) {
+			set_timer0(10);
 
-    	display7SEG(0);
-    	HAL_Delay(1000);
-    	display7SEG(5);
-    	HAL_Delay(1000);
+			updateLEDMatrix(indexLedMatrix);
+  		  	indexLedMatrix++;
+  		 	indexLedMatrix %= 16;
+
+  		  	if (counterLed>0) {
+  		  		counterLed--;
+  		  		if (counterLed==0) {
+  		  			counterLed = 25;
+					HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+  		  			HAL_GPIO_TogglePin(DOT_GPIO_Port, DOT_Pin);
+					turn_on_7seg(indexLed);
+					indexLed++;
+					indexLed %= 4;
+					display7SEG(value);
+					value++;
+					value %= 10;
+  		  		}
+  		  	}
+  	  }
+
       /* USER CODE END WHILE */
 
       /* USER CODE BEGIN 3 */
